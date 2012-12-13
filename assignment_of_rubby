@@ -235,7 +235,7 @@ irb(main):075:0> t4=t2.month-t2.month
 => 0
 irb(main):077:0> t5=t2.day-t1.day
 => 1
-irb(main):081:0> t8=(t3*365)+t5+t4
+irb(main):081:0> t8=(t3*365)+t5+(t4*30)
 => 366
 
 
