@@ -1,0 +1,27 @@
+require 'nokogiri'
+require 'open-uri'
+
+document=Nokogiri::HTML(open("http://www.simplyrecipes.com")) ;
+irb(main):103:0> a1=document.xpath('//a[text()='Receipe Index']/@href')
+
+irb(main):101:0>array=Array.new
+irb(main):102:0>array1=Array.new
+
+document1=Nokogiri::HTML(open("http://www.simplyrecipes.com/index")) ;
+irb(main):103:0> document1.xpath('//div[@class="entry-content"]/p/a').each do |h|
+irb(main):104:1* array<< h.text
+irb(main):105:1> end
+
+
+irb(main):106:0> document1.xpath('//div[@class="entry-content"]/p/a/@href').each do |h|
+irb(main):107:1* array1 << h.text
+irb(main):108:1> end
+=> 0
+
+
+document3=Nokogiri::HTML(open(array1[0])) ;
+irb(main):126:0> document3.xpath('//div[@class="featured-image"]/p/a/@href').each do |h|
+irb(main):127:1* array2 << h.content
+irb(main):128:1> end
+=> 0
+
