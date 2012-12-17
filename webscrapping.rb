@@ -2,6 +2,7 @@ require 'rubygems'
 require 'active_record'
 require 'nokogiri'
 require 'open-uri'
+
 ActiveRecord::Base.establish_connection(
 :adapter => "mysql2",
 :host => "localhost",
@@ -9,33 +10,63 @@ ActiveRecord::Base.establish_connection(
 :username => "root",
 :password => "webonise6186"
 )
+
 class Recipe < ActiveRecord::Base
 end
 
-document=Nokogiri::HTML(open('http://www.simplyrecipes.com'))   #main web page
-a1=document.xpath('//a[text()="Receipe Index"]/@href')          #find Receipe-Index
-
-document1=Nokogiri::HTML(open("http://www.simplyrecipes.com/index")) ;          #index page
+#main web page
+document=Nokogiri::HTML(open('http://www.simplyrecipes.com'))   
+a1=document.xpath('//a[text()="Receipe Index"]/@href')  
+     
+ #find Receipe-Index Page 
+document1=Nokogiri::HTML(open("http://www.simplyrecipes.com/index")) ;  
+   
+#search all links for alphabet   
 document1.xpath('//div[@class="entry-content"]/p/a').each_with_index do |node,index1|      #outer loop
-name=node.content           #name of recipes 
-url=node['href']            #links of recipes
+#name of recipes 
+name=node.content   
+#links of recipes
+url=node['href']   
 
-document2=Nokogiri::HTML(open(url))          #open each link of index page
+#limit the records if you remove if and else it will give you all records        
+if (index1==2)
+break
+else
+#open each link of index page
+document2=Nokogiri::HTML(open(url))        
 document2.xpath('//h2/a').each_with_index do |node1, index2|
 name1=node1.content
 url1=node1['href'].to_s()
+ 
+#open recipe page.
+document3=Nokogiri::HTML(open(url1))    
 
-document3=Nokogiri::HTML(open(url1))        #open recipe page.
-description_of_recipe=document3.xpath('//div[@class="entry-content"]/div[@itemprop="description"]').to_s()
+#find the path of instructions of recipe   
+description_of_recipe=document3.xpath('//div[@class="entry-content"]/div[@itemprop="description"]').to_s
+#remove html tags from information
 desc=description_of_recipe.gsub!(/(<[^>]*>)|\n|\t/s) {""}
+instruction=document3.xpath('//div[@id="recipe-method"]/div[@itemprop="recipeInstructions"]').to_s
 
-method1=document3.xpath('//div[@id="recipe-method"]/div[@itemprop="recipeInstructions"]').to_s()
-method2=document3.xpath('//div[@id="recipe-method"]/span[@class="yield"]').to_s()
-method3=method1 + method2
-method=method3.gsub!(/(<[^>]*>)|\n|\t/s) {""}
-Recipe.create(:recipe_name => name1,:recipe_description => desc,:recipe_method =>method)
+#find the path of yield of recipe  
+yield1=document3.xpath('//div[@id="recipe-method"]/p/span[@class="yield"]').to_s()
+#remove html tags from information
+instructions=instruction.gsub!(/(<[^>]*>)|\n|\t/s) {""}
+yields=yield1.gsub!(/(<[^>]*>)|\n|\t/s) {""}
+#ingredient=document3.css('li.ingredient')
+ingredient=document3.xpath('//div[@id="recipe-ingredients"]/ul').to_s()
+ingredients=ingredient.gsub!(/(<[^>]*>)|\n|\t/s) {""}
+puts ingredients
+#find the path of cook time
+cooktime=document3.xpath('//div[@class="recipe-meta"]/ul/li/span[@class="cooktime"]').to_s()
+#remove html tags from information
+cooktime1=cooktime.gsub!(/(<[^>]*>)|\n|\t/s) {""}
+#find the path of preparation time
+preptime=document3.xpath('//div[@class="recipe-meta"]/ul/li/span[@class="preptime"]').to_s()
+#remove html tags from information
+preptime1=preptime.gsub!(/(<[^>]*>)|\n|\t/s) {""}
+#insert the data into table recipes.
+Recipe.create(:recipe_name=>name1,:recipe_description=>desc,:recipe_method=>instructions,:yield=>yields,:pre_time=>preptime1,:cook_time=>cooktime1,:ingredient=>ingredients)
+end  #end of if-else
 end  #end of inner loop
-if (index1==5)
-break
-end
 end  #end of outer loop
+
