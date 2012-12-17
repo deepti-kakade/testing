@@ -19,7 +19,9 @@ document1=Nokogiri::HTML(open("http://www.simplyrecipes.com/index")) ;          
 document1.xpath('//div[@class="entry-content"]/p/a').each_with_index do |node,index1|      #outer loop
 name=node.content           #name of recipes 
 url=node['href']            #links of recipes
-
+if (index1==5)
+break
+end
 document2=Nokogiri::HTML(open(url))          #open each link of index page
 document2.xpath('//h2/a').each_with_index do |node1, index2|
 name1=node1.content
@@ -35,7 +37,5 @@ method3=method1 + method2
 method=method3.gsub!(/(<[^>]*>)|\n|\t/s) {""}
 Recipe.create(:recipe_name => name1,:recipe_description => desc,:recipe_method =>method)
 end  #end of inner loop
-if (index1==5)
-break
-end
+
 end  #end of outer loop
